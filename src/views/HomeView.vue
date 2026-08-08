@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { MapPinIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, UsersIcon, CalendarDaysIcon, GlobeAltIcon, BookOpenIcon, TagIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
 import BookingModal from '../components/BookingModal.vue'
+import { GAS_URL } from '../config.js'
 
 // --- DATA CALENDAR ---
 const dates = ref([])
@@ -66,15 +67,33 @@ const slots = [
   { id: 3, label: '16:00 - 18:00 WIB', time: 'Petang' }
 ]
 
-const dummyAvailability = {
-  '2026-08-09-1': false, 
-  '2026-08-09-2': false,
-  '2026-08-10-3': false,
+const bookedSlots = ref({})
+const isFetchingAvailability = ref(true)
+
+const fetchAvailability = async () => {
+  isFetchingAvailability.value = true
+  try {
+    const res = await fetch(GAS_URL)
+    const json = await res.json()
+    if (json.success && json.data) {
+      const newBooked = {}
+      json.data.forEach(b => {
+        // Tanggal dari GAS bisa berupa ISO string, kita ambil YYYY-MM-DD
+        const dateStr = String(b.tanggal).split('T')[0]
+        newBooked[`${dateStr}-${b.slot}`] = true
+      })
+      bookedSlots.value = newBooked
+    }
+  } catch (err) {
+    console.error("Gagal menarik data jadwal:", err)
+  } finally {
+    isFetchingAvailability.value = false
+  }
 }
 
 const checkAvailability = (dateStr, slotId) => {
   const key = `${dateStr}-${slotId}`
-  return dummyAvailability[key] !== false 
+  return !bookedSlots.value[key]
 }
 
 // --- MODAL STATE ---
@@ -98,6 +117,7 @@ const handleBookingSubmit = (formData) => {
 
 onMounted(() => {
   generateDates()
+  fetchAvailability()
 })
 </script>
 
@@ -304,7 +324,12 @@ onMounted(() => {
           <span v-if="selectedDate.isToday" class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full ml-1">(Hari ini)</span>
         </h2>
         
-        <div class="flex flex-col gap-3 px-1">
+        <div v-if="isFetchingAvailability" class="flex flex-col items-center justify-center p-8 text-nandur-green/70">
+          <div class="animate-spin rounded-full h-8 w-8 border-4 border-nandur-green/30 border-t-nandur-green mb-3"></div>
+          <p class="text-sm font-medium animate-pulse">Mengecek ketersediaan jadwal...</p>
+        </div>
+
+        <div v-else class="flex flex-col gap-3 px-1">
           <div 
             v-for="slot in slots" 
             :key="slot.id"

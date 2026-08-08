@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { XMarkIcon } from '@heroicons/vue/24/outline'
+import { GAS_URL } from '../config.js'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -23,7 +24,7 @@ const form = ref({
 const isLoading = ref(false)
 const waError = ref('')
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   waError.value = ''
   
   // Validasi nomor WhatsApp: hanya angka, minimal 10 digit, maksimal 14 digit
@@ -34,11 +35,50 @@ const handleSubmit = () => {
   }
 
   isLoading.value = true
-  // Simulasi loading 1.5 detik
-  setTimeout(() => {
+  
+  try {
+    const payload = {
+      action: 'book',
+      tanggal: props.selectedDate.fullDateStr,
+      slot: props.selectedSlot.id,
+      ...form.value
+    }
+    
+    // Menggunakan text/plain untuk mencegah preflight CORS dari browser ke server GAS
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    })
+    
+    const json = await res.json()
+    
+    if (json.success) {
+      // Sukses
+      emit('submit', form.value)
+      
+      // Kosongkan form untuk submit berikutnya
+      form.value = {
+        nama: '',
+        usia: '',
+        email: '',
+        wa: '',
+        tamu: '1',
+        sumber: '',
+        domisili: ''
+      }
+    } else {
+      // Gagal (contoh: slot keduluan orang atau nomor WA sudah ada)
+      alert(json.message || 'Gagal mengirim reservasi. Silakan coba lagi.')
+    }
+  } catch (error) {
+    console.error("Error submitting booking:", error)
+    alert("Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.")
+  } finally {
     isLoading.value = false
-    emit('submit', form.value)
-  }, 1500)
+  }
 }
 </script>
 
