@@ -40,7 +40,7 @@ const handleSubmit = async () => {
     const payload = {
       action: 'book',
       tanggal: props.selectedDate.fullDateStr,
-      slot: props.selectedSlot.id,
+      slot: `${props.selectedSlot.time} (${props.selectedSlot.label})`,
       ...form.value
     }
     

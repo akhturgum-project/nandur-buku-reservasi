@@ -78,9 +78,19 @@ const fetchAvailability = async () => {
     if (json.success && json.data) {
       const newBooked = {}
       json.data.forEach(b => {
-        // Tanggal dari GAS bisa berupa ISO string, kita ambil YYYY-MM-DD
-        const dateStr = String(b.tanggal).split('T')[0]
-        newBooked[`${dateStr}-${b.slot}`] = true
+        // GAS mengembalikan ISO string (cth: 2026-08-12T17:00:00.000Z).
+        // Tambahkan 12 jam agar kembali ke tanggal aslinya (menghindari zona waktu bergeser ke hari sebelumnya)
+        const dateObj = new Date(b.tanggal)
+        dateObj.setHours(dateObj.getHours() + 12)
+        const dateStr = dateObj.toISOString().split('T')[0]
+        
+        // Kompatibilitas jika di spreadsheet masih menggunakan format angka (1, 2, 3)
+        let slotName = b.slot
+        if (b.slot == 1) slotName = 'Siang (12:00 - 14:00 WIB)'
+        if (b.slot == 2) slotName = 'Sore (14:00 - 16:00 WIB)'
+        if (b.slot == 3) slotName = 'Petang (16:00 - 18:00 WIB)'
+
+        newBooked[`${dateStr}-${slotName}`] = true
       })
       bookedSlots.value = newBooked
     }
@@ -91,8 +101,9 @@ const fetchAvailability = async () => {
   }
 }
 
-const checkAvailability = (dateStr, slotId) => {
-  const key = `${dateStr}-${slotId}`
+const checkAvailability = (dateStr, slot) => {
+  const slotName = `${slot.time} (${slot.label})`
+  const key = `${dateStr}-${slotName}`
   return !bookedSlots.value[key]
 }
 
@@ -333,21 +344,21 @@ onMounted(() => {
           <div 
             v-for="slot in slots" 
             :key="slot.id"
-            @click="checkAvailability(selectedDate.fullDateStr, slot.id) && openModal(slot)"
+            @click="checkAvailability(selectedDate.fullDateStr, slot) && openModal(slot)"
             class="relative overflow-hidden rounded-xl p-6 border transition-all duration-300 group flex items-center justify-between"
             :class="[
-              checkAvailability(selectedDate.fullDateStr, slot.id)
+              checkAvailability(selectedDate.fullDateStr, slot)
                 ? 'bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-nandur-green/30 cursor-pointer'
                 : 'bg-gray-50/80 border-gray-100 opacity-50 cursor-not-allowed'
             ]"
           >
             <div class="flex flex-col">
-              <span class="text-xs font-bold uppercase tracking-wider mb-1" :class="checkAvailability(selectedDate.fullDateStr, slot.id) ? 'text-nandur-hover' : 'text-gray-400'">Sesi {{ slot.time }}</span>
-              <span class="text-xl font-bold" :class="checkAvailability(selectedDate.fullDateStr, slot.id) ? 'text-nandur-text' : 'text-gray-400 line-through decoration-gray-300 decoration-2'">{{ slot.label }}</span>
+              <span class="text-xs font-bold uppercase tracking-wider mb-1" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-hover' : 'text-gray-400'">Sesi {{ slot.time }}</span>
+              <span class="text-xl font-bold" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-text' : 'text-gray-400 line-through decoration-gray-300 decoration-2'">{{ slot.label }}</span>
             </div>
 
             <div>
-              <span v-if="checkAvailability(selectedDate.fullDateStr, slot.id)" class="inline-flex items-center text-nandur-green text-sm font-bold bg-nandur-green/5 px-4 py-1.5 rounded-full border border-nandur-green/10">
+              <span v-if="checkAvailability(selectedDate.fullDateStr, slot)" class="inline-flex items-center text-nandur-green text-sm font-bold bg-nandur-green/5 px-4 py-1.5 rounded-full border border-nandur-green/10">
                 Tersedia
               </span>
               <span v-else class="inline-flex items-center text-gray-400 text-sm font-bold bg-gray-100 px-4 py-1.5 rounded-full">
