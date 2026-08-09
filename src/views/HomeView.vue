@@ -80,9 +80,9 @@ const fetchAvailability = async () => {
       const newBooked = {}
       json.data.forEach(b => {
         // GAS mengembalikan ISO string UTC (bergeser mundur karena beda zona waktu).
-        // Kita paksa maju 7 jam di zona UTC untuk mendapatkan tanggal aslinya
+        // Kita paksa maju 12 jam di zona UTC untuk mendapatkan tanggal aslinya dengan aman
         const dateObj = new Date(b.tanggal)
-        dateObj.setUTCHours(dateObj.getUTCHours() + 7)
+        dateObj.setUTCHours(dateObj.getUTCHours() + 12)
         const dateStr = dateObj.toISOString().split('T')[0]
         
         // Kompatibilitas jika di spreadsheet masih menggunakan format angka (1, 2, 3)
