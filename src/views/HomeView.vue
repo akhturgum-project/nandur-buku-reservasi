@@ -73,14 +73,8 @@ const isFetchingAvailability = ref(true)
 const fetchAvailability = async () => {
   isFetchingAvailability.value = true
   try {
-    // Menggunakan cache buster dan no-store agar browser tidak menggunakan data lama (cache)
-    const res = await fetch(`${GAS_URL}?t=${new Date().getTime()}`, {
-      cache: 'no-store',
-      headers: {
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache'
-      }
-    })
+    // Menggunakan cache buster agar browser tidak menggunakan data lama (cache)
+    const res = await fetch(`${GAS_URL}?t=${new Date().getTime()}`)
     const json = await res.json()
     if (json.success && json.data) {
       const newBooked = {}
