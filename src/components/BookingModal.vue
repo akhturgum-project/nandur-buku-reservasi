@@ -18,11 +18,57 @@ const form = ref({
   wa: '',
   tamu: '1',
   sumber: '',
-  domisili: ''
+  domisili: '',
+  otp: ''
 })
 
 const isLoading = ref(false)
 const waError = ref('')
+const isSendingOtp = ref(false)
+const isOtpSent = ref(false)
+const otpTimer = ref(0)
+let timerInterval = null
+
+const handleSendOtp = async () => {
+  if (!form.value.email || !form.value.nama) {
+    alert("Mohon isi Nama Lengkap dan Email terlebih dahulu untuk mengirim OTP.")
+    return
+  }
+  
+  isSendingOtp.value = true
+  
+  try {
+    const payload = {
+      action: 'send_otp',
+      email: form.value.email,
+      nama: form.value.nama
+    }
+    
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    
+    const json = await res.json()
+    if (json.success) {
+      isOtpSent.value = true
+      otpTimer.value = 300 // 5 menit
+      
+      if (timerInterval) clearInterval(timerInterval)
+      timerInterval = setInterval(() => {
+        if (otpTimer.value > 0) otpTimer.value--
+        else clearInterval(timerInterval)
+      }, 1000)
+    } else {
+      alert("Gagal mengirim OTP: " + json.message)
+    }
+  } catch (error) {
+    alert("Gagal terhubung ke server saat mengirim OTP.")
+  } finally {
+    isSendingOtp.value = false
+  }
+}
 
 const handleSubmit = async () => {
   waError.value = ''
@@ -31,6 +77,11 @@ const handleSubmit = async () => {
   const waRegex = /^[0-9]{10,14}$/
   if (!waRegex.test(form.value.wa)) {
     waError.value = 'Nomor WhatsApp tidak valid! Masukkan 10-14 digit angka.'
+    return
+  }
+  
+  if (!isOtpSent.value || !form.value.otp) {
+    alert("Anda harus memverifikasi email dengan kode OTP terlebih dahulu.")
     return
   }
 
@@ -67,8 +118,11 @@ const handleSubmit = async () => {
         wa: '',
         tamu: '1',
         sumber: '',
-        domisili: ''
+        domisili: '',
+        otp: ''
       }
+      isOtpSent.value = false
+      if (timerInterval) clearInterval(timerInterval)
     } else {
       // Gagal (contoh: slot keduluan orang atau nomor WA sudah ada)
       alert(json.message || 'Gagal mengirim reservasi. Silakan coba lagi.')
@@ -141,8 +195,38 @@ const handleSubmit = async () => {
 
           <div>
             <label class="block text-sm font-medium text-nandur-text mb-1">Email</label>
-            <input v-model="form.email" type="email" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text" placeholder="Masukkan email aktif">
+            <div class="flex gap-2">
+              <input v-model="form.email" type="email" required :disabled="isOtpSent" class="flex-1 px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text disabled:bg-gray-100 disabled:text-gray-500 transition-colors" placeholder="Masukkan email aktif">
+              <button 
+                type="button" 
+                @click="handleSendOtp"
+                :disabled="isSendingOtp || isOtpSent || !form.email"
+                class="px-4 py-2 bg-nandur-cream text-nandur-hover font-bold rounded-lg border border-nandur-cream/80 hover:bg-nandur-cream/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                <span v-if="isSendingOtp" class="inline-block w-4 h-4 border-2 border-nandur-hover/30 border-t-nandur-hover rounded-full animate-spin"></span>
+                <span v-else>{{ isOtpSent ? 'OTP Terkirim ✓' : 'Kirim OTP' }}</span>
+              </button>
+            </div>
           </div>
+
+          <Transition name="fade-slide">
+            <div v-if="isOtpSent" class="bg-nandur-green/5 p-4 rounded-xl border border-nandur-green/20">
+              <label class="block text-sm font-medium text-nandur-green mb-2">Kode OTP (Cek Inbox/Spam Email)</label>
+              <input 
+                v-model="form.otp" 
+                type="text" 
+                required 
+                maxlength="4" 
+                class="w-full px-4 py-3 text-center tracking-[1em] font-black text-xl rounded-lg border border-nandur-green/50 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green text-nandur-text" 
+                placeholder="••••"
+              >
+              <div class="flex justify-between items-center mt-2">
+                <p v-if="otpTimer > 0" class="text-xs text-gray-500 font-medium">Sisa waktu: <span class="text-nandur-hover font-bold">{{ Math.floor(otpTimer/60) }}:{{ String(otpTimer%60).padStart(2, '0') }}</span></p>
+                <p v-else class="text-xs text-red-500 font-bold">Kode OTP hangus. Tutup form dan ulangi.</p>
+                <button type="button" @click="isOtpSent = false; form.otp = ''; if(timerInterval) clearInterval(timerInterval)" class="text-[10px] font-bold text-nandur-hover hover:underline">Ganti Email?</button>
+              </div>
+            </div>
+          </Transition>
 
           <div>
             <label class="block text-sm font-medium text-nandur-text mb-1">Tahu Nandur Buku Dari Mana?</label>
@@ -212,5 +296,15 @@ const handleSubmit = async () => {
 .modal-fade-leave-to .modal-content {
   transform: scale(0.95) translateY(10px);
   opacity: 0;
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
