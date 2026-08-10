@@ -71,12 +71,17 @@ const handleLogin = async () => {
 }
 
 const sendReminder = (booking) => {
-  let phone = booking.wa
-  if (!phone) return
+  let phone = String(booking.wa || '').trim()
+  if (!phone || phone === '0') return
+  
+  // Bersihkan karakter non-angka jika ada
+  phone = phone.replace(/\D/g, '')
   
   // Format ke 628xxx
   if (phone.startsWith('0')) {
     phone = '62' + phone.substring(1)
+  } else if (phone.startsWith('8')) {
+    phone = '62' + phone
   }
   
   const text = `Halo Kak ${booking.nama}, mengingatkan jadwal kunjungan ke perpustakaan Nandur Buku untuk besok hari pada sesi ${booking.slot}. Jangan lupa datang tepat waktu ya kak, sampai jumpa!`
