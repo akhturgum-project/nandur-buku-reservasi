@@ -73,15 +73,22 @@ const isFetchingAvailability = ref(true)
 const fetchAvailability = async () => {
   isFetchingAvailability.value = true
   try {
-    const res = await fetch(GAS_URL)
+    // Menggunakan cache buster dan no-store agar browser tidak menggunakan data lama (cache)
+    const res = await fetch(`${GAS_URL}?t=${new Date().getTime()}`, {
+      cache: 'no-store',
+      headers: {
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache'
+      }
+    })
     const json = await res.json()
     if (json.success && json.data) {
       const newBooked = {}
       json.data.forEach(b => {
-        // GAS mengembalikan ISO string (cth: 2026-08-12T17:00:00.000Z).
-        // Tambahkan 12 jam agar kembali ke tanggal aslinya (menghindari zona waktu bergeser ke hari sebelumnya)
+        // GAS mengembalikan ISO string UTC (bergeser mundur karena beda zona waktu).
+        // Kita paksa maju 7 jam di zona UTC untuk mendapatkan tanggal aslinya
         const dateObj = new Date(b.tanggal)
-        dateObj.setHours(dateObj.getHours() + 12)
+        dateObj.setUTCHours(dateObj.getUTCHours() + 7)
         const dateStr = dateObj.toISOString().split('T')[0]
         
         // Kompatibilitas jika di spreadsheet masih menggunakan format angka (1, 2, 3)
