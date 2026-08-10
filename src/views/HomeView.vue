@@ -137,10 +137,10 @@ onMounted(() => {
   <div class="min-h-screen bg-nandur-bg font-sans flex flex-col items-center pb-28 md:pb-34 relative">
     
     <!-- HEADER -->
-    <header class="w-full max-w-3xl px-6 pt-16 pb-8">
-      <div class="flex items-center gap-3 md:gap-4 mb-3">
+    <header class="w-full max-w-3xl px-6 pt-8 pb-5 md:pt-16 md:pb-8">
+      <div class="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
         <img src="/nandur-buku-icon.webp" alt="Logo Nandur Buku" class="w-10 h-10 md:w-14 md:h-14 object-contain" />
-        <h1 class="text-3xl md:text-5xl font-bold text-nandur-text">Nandur Buku Reservation</h1>
+        <h1 class="text-3xl md:text-5xl font-bold text-nandur-text leading-tight">Nandur Buku Reservation</h1>
       </div>
       <p class="text-nandur-text/70 text-sm md:text-base">
         Halo, selamat datang di Nandur Buku. Kami adalah ruang literasi yang menyediakan perpustakaan privat secara gratis. 
