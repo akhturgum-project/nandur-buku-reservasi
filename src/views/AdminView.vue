@@ -175,9 +175,42 @@ const handleBlockDay = async () => {
   }
 }
 
-// Computed: Filter bookings yang aktif dan bukan booking fiktif "TUTUP (LIBUR)"
+// Filter Bulan
+const selectedMonth = ref('Semua')
+const isDropdownOpen = ref(false)
+
+const selectMonth = (val) => {
+  selectedMonth.value = val
+  isDropdownOpen.value = false
+}
+
+const availableMonths = computed(() => {
+  const monthsMap = new Map()
+  bookings.value.forEach(b => {
+    if (b.nama && b.nama !== 'TUTUP (LIBUR)') {
+      const monthStr = b.tanggalAsli.substring(0, 7) // Format YYYY-MM
+      if (!monthsMap.has(monthStr)) {
+        const d = new Date(b.tanggalAsli)
+        const label = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        monthsMap.set(monthStr, label)
+      }
+    }
+  })
+  // Urutkan menurun (terbaru di atas)
+  return Array.from(monthsMap.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(entry => ({ value: entry[0], label: entry[1] }))
+})
+
+// Computed: Filter bookings yang aktif, bukan fiktif, dan sesuai bulan yang dipilih
 const realBookings = computed(() => {
-  return bookings.value.filter(b => b.nama && b.nama !== 'TUTUP (LIBUR)')
+  let filtered = bookings.value.filter(b => b.nama && b.nama !== 'TUTUP (LIBUR)')
+  
+  if (selectedMonth.value !== 'Semua') {
+    filtered = filtered.filter(b => b.tanggalAsli.startsWith(selectedMonth.value))
+  }
+  
+  return filtered
 })
 </script>
 
@@ -264,14 +297,68 @@ const realBookings = computed(() => {
         
         <!-- Tab: Daftar Reservasi -->
         <div v-if="activeTab === 'reservasi'" class="w-full max-w-6xl mx-auto space-y-6">
-          <div class="flex justify-between items-end mb-8">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
             <div>
               <h2 class="text-3xl font-black text-nandur-green mb-2">Daftar Reservasi</h2>
               <p class="text-gray-500">Kelola dan pantau seluruh tamu yang akan berkunjung.</p>
             </div>
-            <button @click="handleLogin" class="bg-white p-3 rounded-xl shadow-sm border border-nandur-cream text-nandur-green hover:rotate-180 transition-all duration-500" title="Refresh Data">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            </button>
+            
+            <div class="flex items-center gap-3 relative">
+              
+              <!-- Custom Dropdown Filter Bulan -->
+              <div class="relative z-50">
+                <!-- Overlay penutup dropdown -->
+                <div v-if="isDropdownOpen" @click="isDropdownOpen = false" class="fixed inset-0 z-40"></div>
+                
+                <!-- Trigger Button -->
+                <button 
+                  @click="isDropdownOpen = !isDropdownOpen"
+                  class="relative z-50 bg-white px-5 py-3 rounded-xl shadow-sm border border-nandur-cream text-nandur-text font-semibold flex items-center justify-between min-w-[170px] hover:border-nandur-green/30 transition-colors"
+                >
+                  <span class="truncate pr-3">{{ selectedMonth === 'Semua' ? 'Semua Waktu' : availableMonths.find(m => m.value === selectedMonth)?.label || 'Semua Waktu' }}</span>
+                  <svg class="w-4 h-4 text-gray-400 transition-transform duration-300" :class="{ 'rotate-180': isDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <transition
+                  enter-active-class="transition ease-out duration-200"
+                  enter-from-class="opacity-0 translate-y-1 scale-95"
+                  enter-to-class="opacity-100 translate-y-0 scale-100"
+                  leave-active-class="transition ease-in duration-150"
+                  leave-from-class="opacity-100 translate-y-0 scale-100"
+                  leave-to-class="opacity-0 translate-y-1 scale-95"
+                >
+                  <ul 
+                    v-if="isDropdownOpen"
+                    class="absolute right-0 md:left-0 top-[110%] mt-1 w-full min-w-[170px] bg-white border border-gray-100 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] py-2 z-50 overflow-hidden origin-top"
+                  >
+                    <li 
+                      @click="selectMonth('Semua')"
+                      class="px-5 py-2.5 hover:bg-nandur-cream/30 cursor-pointer transition-colors text-sm font-bold flex items-center justify-between"
+                      :class="selectedMonth === 'Semua' ? 'text-nandur-green bg-nandur-green/5' : 'text-nandur-text/70'"
+                    >
+                      Semua Waktu
+                      <svg v-if="selectedMonth === 'Semua'" class="w-4 h-4 text-nandur-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </li>
+                    <li 
+                      v-for="m in availableMonths" 
+                      :key="m.value"
+                      @click="selectMonth(m.value)"
+                      class="px-5 py-2.5 hover:bg-nandur-cream/30 cursor-pointer transition-colors text-sm font-bold flex items-center justify-between"
+                      :class="selectedMonth === m.value ? 'text-nandur-green bg-nandur-green/5' : 'text-nandur-text/70'"
+                    >
+                      {{ m.label }}
+                      <svg v-if="selectedMonth === m.value" class="w-4 h-4 text-nandur-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </li>
+                  </ul>
+                </transition>
+              </div>
+
+              <!-- Tombol Refresh -->
+              <button @click="handleLogin" class="relative z-10 bg-white p-3 rounded-xl shadow-sm border border-nandur-cream text-nandur-green hover:rotate-180 transition-all duration-500 shrink-0" title="Refresh Data">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+            </div>
           </div>
 
           <div v-if="realBookings.length === 0" class="bg-white border-2 border-dashed border-nandur-cream rounded-3xl p-12 text-center">
