@@ -101,16 +101,15 @@ const fetchAvailability = async () => {
         
         const dayOfWeek = dateObj.getDay()
         
-        // Kompatibilitas jika di spreadsheet masih menggunakan format angka (1, 2, 3)
-        let slotName = b.slot
-        if (dayOfWeek === 5) {
-          if (b.slot == 1) slotName = 'Pertama (13:00 - 15:00 WIB)'
-          if (b.slot == 2) slotName = 'Kedua (15:00 - 17:00 WIB)'
-          if (b.slot == 3) slotName = 'Ketiga (17:00 - 19:00 WIB)'
-        } else {
-          if (b.slot == 1) slotName = 'Pertama (12:00 - 14:00 WIB)'
-          if (b.slot == 2) slotName = 'Kedua (14:00 - 16:00 WIB)'
-          if (b.slot == 3) slotName = 'Ketiga (16:00 - 18:00 WIB)'
+        let slotName = String(b.slot)
+        
+        // Normalisasi format lama (1, 2, 3) atau (Siang, Sore, Petang) ke format baru
+        if (slotName == '1' || slotName.includes('Siang') || slotName.includes('Pertama')) {
+           slotName = dayOfWeek === 5 ? 'Pertama (13:00 - 15:00 WIB)' : 'Pertama (12:00 - 14:00 WIB)'
+        } else if (slotName == '2' || slotName.includes('Sore') || slotName.includes('Kedua')) {
+           slotName = dayOfWeek === 5 ? 'Kedua (15:00 - 17:00 WIB)' : 'Kedua (14:00 - 16:00 WIB)'
+        } else if (slotName == '3' || slotName.includes('Petang') || slotName.includes('Ketiga')) {
+           slotName = dayOfWeek === 5 ? 'Ketiga (17:00 - 19:00 WIB)' : 'Ketiga (16:00 - 18:00 WIB)'
         }
 
         newBooked[`${dateStr}-${slotName}`] = true
@@ -206,14 +205,16 @@ onMounted(() => {
             <div 
               v-for="d in dates" 
               :key="d.fullDateStr"
-              @click="!d.isClosed && !isFullyBooked(d.fullDateStr) && (selectedDate = d)"
+              @click="!d.isClosed && (selectedDate = d)"
               class="flex-shrink-0 flex flex-col items-center justify-center w-[5rem] h-[4.5rem] rounded-xl transition-all duration-300 relative cursor-pointer"
               :class="[
-                d.isClosed || isFullyBooked(d.fullDateStr)
+                d.isClosed 
                   ? 'bg-gray-50 border border-gray-100 cursor-not-allowed' 
                   : selectedDate?.fullDateStr === d.fullDateStr
                     ? 'bg-white shadow-md text-black cursor-default scale-105 ring-1 ring-gray-200'
-                    : 'bg-white border border-gray-100 text-gray-400 hover:text-black hover:border-gray-300 hover:shadow-sm'
+                    : isFullyBooked(d.fullDateStr)
+                      ? 'bg-gray-50 border border-gray-100 text-gray-400 hover:text-black hover:border-gray-300 hover:shadow-sm'
+                      : 'bg-white border border-gray-100 text-gray-400 hover:text-black hover:border-gray-300 hover:shadow-sm'
               ]"
             >
               <div class="text-[14px] whitespace-nowrap mb-0.5" :class="d.isClosed || isFullyBooked(d.fullDateStr) ? 'text-gray-400 line-through decoration-gray-300' : (selectedDate?.fullDateStr === d.fullDateStr ? 'font-bold' : '')">
