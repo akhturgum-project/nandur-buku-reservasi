@@ -61,11 +61,25 @@ const currentMonthYear = computed(() => {
 })
 
 // --- DATA SLOTS ---
-const slots = [
-  { id: 1, label: '12:00 - 14:00 WIB', time: 'Siang' },
-  { id: 2, label: '14:00 - 16:00 WIB', time: 'Sore' },
-  { id: 3, label: '16:00 - 18:00 WIB', time: 'Petang' }
-]
+const getSlotsForDay = (dayOfWeek) => {
+  if (dayOfWeek === 5) { // Jumat
+    return [
+      { id: 1, label: '13:00 - 15:00 WIB', time: 'Pertama' },
+      { id: 2, label: '15:00 - 17:00 WIB', time: 'Kedua' },
+      { id: 3, label: '17:00 - 19:00 WIB', time: 'Ketiga' }
+    ]
+  }
+  return [
+    { id: 1, label: '12:00 - 14:00 WIB', time: 'Pertama' },
+    { id: 2, label: '14:00 - 16:00 WIB', time: 'Kedua' },
+    { id: 3, label: '16:00 - 18:00 WIB', time: 'Ketiga' }
+  ]
+}
+
+const currentSlots = computed(() => {
+  if (!selectedDate.value) return []
+  return getSlotsForDay(selectedDate.value.dateObj.getDay())
+})
 
 const bookedSlots = ref({})
 const isFetchingAvailability = ref(true)
@@ -85,11 +99,19 @@ const fetchAvailability = async () => {
         dateObj.setUTCHours(dateObj.getUTCHours() + 12)
         const dateStr = dateObj.toISOString().split('T')[0]
         
+        const dayOfWeek = dateObj.getDay()
+        
         // Kompatibilitas jika di spreadsheet masih menggunakan format angka (1, 2, 3)
         let slotName = b.slot
-        if (b.slot == 1) slotName = 'Siang (12:00 - 14:00 WIB)'
-        if (b.slot == 2) slotName = 'Sore (14:00 - 16:00 WIB)'
-        if (b.slot == 3) slotName = 'Petang (16:00 - 18:00 WIB)'
+        if (dayOfWeek === 5) {
+          if (b.slot == 1) slotName = 'Pertama (13:00 - 15:00 WIB)'
+          if (b.slot == 2) slotName = 'Kedua (15:00 - 17:00 WIB)'
+          if (b.slot == 3) slotName = 'Ketiga (17:00 - 19:00 WIB)'
+        } else {
+          if (b.slot == 1) slotName = 'Pertama (12:00 - 14:00 WIB)'
+          if (b.slot == 2) slotName = 'Kedua (14:00 - 16:00 WIB)'
+          if (b.slot == 3) slotName = 'Ketiga (16:00 - 18:00 WIB)'
+        }
 
         newBooked[`${dateStr}-${slotName}`] = true
       })
@@ -106,6 +128,19 @@ const checkAvailability = (dateStr, slot) => {
   const slotName = `${slot.time} (${slot.label})`
   const key = `${dateStr}-${slotName}`
   return !bookedSlots.value[key]
+}
+
+const isFullyBooked = (dateStr) => {
+  if (isFetchingAvailability.value || Object.keys(bookedSlots.value).length === 0) return false
+  const [y, m, d] = dateStr.split('-')
+  const dateObj = new Date(y, m - 1, d)
+  const daySlots = getSlotsForDay(dateObj.getDay())
+  
+  return daySlots.every(slot => {
+    const slotName = `${slot.time} (${slot.label})`
+    const key = `${dateStr}-${slotName}`
+    return bookedSlots.value[key]
+  })
 }
 
 // --- MODAL STATE ---
@@ -140,85 +175,108 @@ onMounted(() => {
     <header class="w-full max-w-3xl px-6 pt-8 pb-5 md:pt-16 md:pb-8">
       <div class="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
         <img src="/nandur-buku-icon.webp" alt="Logo Nandur Buku" class="w-10 h-10 md:w-14 md:h-14 object-contain" />
-        <h1 class="text-3xl md:text-5xl font-bold text-nandur-text leading-tight">Nandur Buku Reservation</h1>
+        <h1 class="text-2xl md:text-4xl font-bold text-nandur-text leading-tight">Reservasi Kunjungan Ke Nandur Buku</h1>
       </div>
       <p class="text-nandur-text/70 text-sm md:text-base">
-        Halo, selamat datang di Nandur Buku. Kami adalah ruang literasi yang menyediakan perpustakaan privat secara gratis. 
-        Bagi warga Jakarta dan sekitarnya, yuk baca berbagai koleksi di perpus kami.
+        Halo, Selamat datang di Nandur Buku. Terima kasih telah berencana untuk mengunjungi perpustakaan kecil kami. Silahkan pilih slot waktu kunjungan yang tersedia di bawah dan isi formulir singkat untuk mengirimkan rencana kedatanganmu.
       </p>
     </header>
 
     <main class="w-full max-w-3xl px-4 flex flex-col gap-6">
 
-      <!-- TENTANG NANDUR BUKU -->
-      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
-        <h2 class="text-lg md:text-xl font-bold mb-3 text-nandur-green">Tentang Nandur Buku</h2>
+      <!-- KALENDER COMPONENT -->
+      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-4 md:p-6 border border-gray-50">
         
-        <div class="relative">
-          <div 
-            class="text-sm md:text-base text-nandur-text/80 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden space-y-3" 
-            :class="isDescriptionExpanded ? 'max-h-[1000px]' : 'max-h-[4.5rem]'"
-          >
-            <p>
-              Nandur Buku merupakan perpustakaan berbasis rumah (home library) yang dikelola secara mandiri. Untuk menjaga kenyamanan bersama, kunjungan dilakukan berdasarkan jadwal yang telah dikonfirmasi dan dengan jumlah pengunjung yang terbatas.
-            </p>
-            <p>
-              Dengan mengisi formulir ini, saya memahami bahwa pengiriman formulir belum berarti reservasi saya otomatis diterima. Pihak Nandur Buku akan mengkonfirmasi terlebih dahulu melalui WhatsApp kami di <span class="font-semibold text-nandur-text">0895-8089-20117</span>.
-            </p>
-            <p>
-              Saya bersedia datang sesuai jadwal yang telah dikonfirmasi, menjaga ketenangan, kebersihan, serta memperlakukan seluruh koleksi buku dan fasilitas dengan baik. Apabila saya berhalangan hadir atau ingin mengubah jadwal kunjungan, saya akan menginformasikannya kepada pengelola sesegera mungkin.
-            </p>
-            <p>
-              Saya juga memahami bahwa pihak Nandur Buku berhak menyesuaikan atau membatalkan jadwal kunjungan apabila terdapat kondisi tertentu yang tidak memungkinkan untuk menerima tamu.
-            </p>
-          </div>
+        <!-- Header Bulan -->
+        <div class="flex items-center justify-center gap-1 mb-5">
+          <span class="font-bold text-lg tracking-wide">{{ currentMonthYear }}</span>
+          <ChevronDownIcon class="w-4 h-4 text-gray-500 stroke-2" />
         </div>
+        
+        <!-- Area Kalender Abu-abu -->
+        <div class="bg-white rounded-xl py-2 flex items-center relative group">
+          
+          <!-- Tombol Kiri -->
+          <button @click="scrollCalendar('left')" class="p-2 ml-1 rounded-full hover:bg-white hover:shadow-sm text-gray-400 hover:text-black transition-all absolute left-0 z-10 hidden sm:block">
+            <ChevronLeftIcon class="w-5 h-5 stroke-2" />
+          </button>
 
-        <button 
-          @click="isDescriptionExpanded = !isDescriptionExpanded" 
-          class="mt-2 text-nandur-green font-bold text-sm hover:underline"
-        >
-          {{ isDescriptionExpanded ? 'Tampilkan lebih sedikit' : 'Selengkapnya...' }}
-        </button>
+          <!-- Deretan Tanggal -->
+          <div ref="calendarScroll" class="flex gap-2 overflow-x-auto hide-scrollbar scroll-smooth w-full sm:px-12 px-2 pt-4 pb-2">
+            <div 
+              v-for="d in dates" 
+              :key="d.fullDateStr"
+              @click="!d.isClosed && !isFullyBooked(d.fullDateStr) && (selectedDate = d)"
+              class="flex-shrink-0 flex flex-col items-center justify-center w-[5rem] h-[4.5rem] rounded-xl transition-all duration-300 relative cursor-pointer"
+              :class="[
+                d.isClosed || isFullyBooked(d.fullDateStr)
+                  ? 'bg-gray-50 border border-gray-100 cursor-not-allowed' 
+                  : selectedDate?.fullDateStr === d.fullDateStr
+                    ? 'bg-white shadow-md text-black cursor-default scale-105 ring-1 ring-gray-200'
+                    : 'bg-white border border-gray-100 text-gray-400 hover:text-black hover:border-gray-300 hover:shadow-sm'
+              ]"
+            >
+              <div class="text-[14px] whitespace-nowrap mb-0.5" :class="d.isClosed || isFullyBooked(d.fullDateStr) ? 'text-gray-400 line-through decoration-gray-300' : (selectedDate?.fullDateStr === d.fullDateStr ? 'font-bold' : '')">
+                {{ d.date }} {{ d.monthName }}
+              </div>
+              <div class="text-[11px] tracking-wider font-bold" :class="d.isClosed || isFullyBooked(d.fullDateStr) ? 'text-red-400' : (selectedDate?.fullDateStr === d.fullDateStr ? 'opacity-80 font-medium' : 'opacity-60')">
+                {{ d.isClosed ? 'TUTUP' : (isFullyBooked(d.fullDateStr) ? 'PENUH' : d.dayName) }}
+              </div>
+              <!-- Badge Hari Ini -->
+              <div v-if="d.isToday" class="absolute -top-2 -right-2 bg-nandur-green text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">
+                HARI INI
+              </div>
+            </div>
+          </div>
+
+          <!-- Tombol Kanan -->
+          <button @click="scrollCalendar('right')" class="p-2 mr-1 rounded-full hover:bg-white hover:shadow-sm text-gray-400 hover:text-black transition-all absolute right-0 z-10 hidden sm:block">
+            <ChevronRightIcon class="w-5 h-5 stroke-2" />
+          </button>
+        </div>
       </section>
 
-      <!-- ATURAN BERKUNJUNG -->
-      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
-        <h2 class="text-lg md:text-xl font-bold mb-4 text-nandur-green">Aturan Berkunjung</h2>
+      <!-- SLOT WAKTU -->
+      <section v-if="selectedDate">
+        <h2 class="text-base md:text-lg font-bold text-nandur-text px-2 mb-4 flex items-center gap-2">
+          <ClockIcon class="w-5 h-5 text-nandur-green" />
+          Pilih Sesi untuk hari {{ selectedDate.fullDayName }} {{ selectedDate.date }}/{{ selectedDate.dateObj.getMonth() + 1 }}
+        </h2>
         
-        <div class="relative">
-          <div 
-            class="text-sm md:text-base text-nandur-text/80 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden space-y-3" 
-            :class="isRulesExpanded ? 'max-h-[1000px]' : 'max-h-[4.5rem]'"
-          >
-            <p>
-              Demi kenyamanan bersama selama berada di area baca Nandur Buku, kami memohon kerja sama seluruh pengunjung untuk mematuhi beberapa aturan berikut:
-            </p>
-            <ul class="space-y-3 list-disc list-outside pl-5">
-              <li>
-                <strong class="text-nandur-text">Datang Tepat Waktu:</strong> Harap hadir sesuai dengan jadwal sesi yang telah Anda pesan. Keterlambatan dapat mengurangi waktu baca Anda secara keseluruhan.
-              </li>
-              <li>
-                <strong class="text-nandur-text">Menjaga Ketenangan:</strong> Ruang literasi ini dirancang untuk membaca dengan fokus dan rileks. Mohon tidak berisik atau mengobrol terlalu keras agar kenyamanan pengunjung lain tetap terjaga.
-              </li>
-              <li>
-                <strong class="text-nandur-text">Dilarang Membawa Makanan & Minuman Luar:</strong> Untuk menjaga kebersihan ruangan serta melindungi koleksi buku kami dari kerusakan, pengunjung tidak diperkenankan membawa makanan dan minuman dari luar.
-              </li>
-            </ul>
-            <p class="font-medium italic pt-2">
-              Terima kasih atas pengertian dan kerja sama Anda dalam menjaga suasana ruang literasi Nandur Buku!
-            </p>
-          </div>
+        <div v-if="isFetchingAvailability" class="flex flex-col items-center justify-center p-8 text-nandur-green/70">
+          <div class="animate-spin rounded-full h-8 w-8 border-4 border-nandur-green/30 border-t-nandur-green mb-3"></div>
+          <p class="text-sm font-medium animate-pulse">Mengecek ketersediaan jadwal...</p>
         </div>
 
-        <button 
-          @click="isRulesExpanded = !isRulesExpanded" 
-          class="mt-3 text-nandur-green font-bold text-sm hover:underline"
-        >
-          {{ isRulesExpanded ? 'Tampilkan lebih sedikit' : 'Selengkapnya...' }}
-        </button>
+        <div v-else class="flex flex-col gap-3 px-1">
+          <div 
+            v-for="slot in currentSlots" 
+            :key="slot.id"
+            @click="checkAvailability(selectedDate.fullDateStr, slot) && openModal(slot)"
+            class="relative overflow-hidden rounded-xl p-6 border transition-all duration-300 group flex items-center justify-between"
+            :class="[
+              checkAvailability(selectedDate.fullDateStr, slot)
+                ? 'bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-nandur-green/30 cursor-pointer'
+                : 'bg-gray-50/80 border-gray-100 opacity-50 cursor-not-allowed'
+            ]"
+          >
+            <div class="flex flex-col">
+              <span class="text-xs font-bold uppercase tracking-wider mb-1" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-hover' : 'text-gray-400'">Sesi {{ slot.time }}</span>
+              <span class="text-xl font-bold" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-text' : 'text-gray-400 line-through decoration-gray-300 decoration-2'">{{ slot.label }}</span>
+            </div>
+
+            <div>
+              <span v-if="checkAvailability(selectedDate.fullDateStr, slot)" class="inline-flex items-center text-nandur-green text-sm font-bold bg-nandur-green/5 px-4 py-1.5 rounded-full border border-nandur-green/10">
+                Tersedia
+              </span>
+              <span v-else class="inline-flex items-center text-gray-400 text-sm font-bold bg-gray-100 px-4 py-1.5 rounded-full">
+                Penuh
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
-      
+
       <!-- LOKASI KAMI -->
       <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-4 md:p-5 flex items-center justify-between border border-gray-50 relative overflow-hidden">
         <div class="z-10">
@@ -276,97 +334,65 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- KALENDER COMPONENT -->
-      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-4 md:p-6 border border-gray-50">
+      <!-- ATURAN BERKUNJUNG -->
+      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
+        <h2 class="text-lg md:text-xl font-bold mb-4 text-nandur-green">Aturan Berkunjung</h2>
         
-        <!-- Header Bulan -->
-        <div class="flex items-center justify-center gap-1 mb-5">
-          <span class="font-bold text-lg tracking-wide">{{ currentMonthYear }}</span>
-          <ChevronDownIcon class="w-4 h-4 text-gray-500 stroke-2" />
-        </div>
-        
-        <!-- Area Kalender Abu-abu -->
-        <div class="bg-[#f8f9fa] rounded-xl p-2 flex items-center relative group shadow-inner">
-          
-          <!-- Tombol Kiri -->
-          <button @click="scrollCalendar('left')" class="p-2 ml-1 rounded-full hover:bg-white hover:shadow-sm text-gray-400 hover:text-black transition-all absolute left-0 z-10 hidden sm:block">
-            <ChevronLeftIcon class="w-5 h-5 stroke-2" />
-          </button>
-
-          <!-- Deretan Tanggal -->
-          <div ref="calendarScroll" class="flex gap-2 overflow-x-auto hide-scrollbar scroll-smooth w-full sm:px-12 px-2 pt-4 pb-2">
-            <div 
-              v-for="d in dates" 
-              :key="d.fullDateStr"
-              @click="!d.isClosed && (selectedDate = d)"
-              class="flex-shrink-0 flex flex-col items-center justify-center w-[5rem] h-[4.5rem] rounded-xl transition-all duration-300 relative cursor-pointer"
-              :class="[
-                d.isClosed 
-                  ? 'bg-red-50/30 cursor-not-allowed' 
-                  : selectedDate?.fullDateStr === d.fullDateStr
-                    ? 'bg-white shadow-md text-black cursor-default scale-105 ring-1 ring-gray-100'
-                    : 'text-gray-400 hover:text-black hover:bg-white/50'
-              ]"
-            >
-              <div class="text-[14px] whitespace-nowrap mb-0.5" :class="d.isClosed ? 'text-gray-400 line-through decoration-gray-300' : (selectedDate?.fullDateStr === d.fullDateStr ? 'font-bold' : '')">
-                {{ d.date }} {{ d.monthName }}
-              </div>
-              <div class="text-[11px] tracking-wider font-bold" :class="d.isClosed ? 'text-red-400' : (selectedDate?.fullDateStr === d.fullDateStr ? 'opacity-80 font-medium' : 'opacity-60')">
-                {{ d.isClosed ? 'TUTUP' : d.dayName }}
-              </div>
-              <!-- Badge Hari Ini -->
-              <div v-if="d.isToday" class="absolute -top-2 -right-2 bg-nandur-green text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white">
-                HARI INI
-              </div>
-            </div>
-          </div>
-
-          <!-- Tombol Kanan -->
-          <button @click="scrollCalendar('right')" class="p-2 mr-1 rounded-full hover:bg-white hover:shadow-sm text-gray-400 hover:text-black transition-all absolute right-0 z-10 hidden sm:block">
-            <ChevronRightIcon class="w-5 h-5 stroke-2" />
-          </button>
-        </div>
-      </section>
-
-      <!-- SLOT WAKTU -->
-      <section v-if="selectedDate">
-        <h2 class="text-lg font-bold text-nandur-text px-2 mb-4 flex items-center gap-2">
-          <ClockIcon class="w-5 h-5 text-nandur-green" />
-          Pilih Sesi untuk {{ selectedDate.fullDayName }} {{ selectedDate.date }}/{{ selectedDate.dateObj.getMonth() + 1 }}
-          <span v-if="selectedDate.isToday" class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full ml-1">(Hari ini)</span>
-        </h2>
-        
-        <div v-if="isFetchingAvailability" class="flex flex-col items-center justify-center p-8 text-nandur-green/70">
-          <div class="animate-spin rounded-full h-8 w-8 border-4 border-nandur-green/30 border-t-nandur-green mb-3"></div>
-          <p class="text-sm font-medium animate-pulse">Mengecek ketersediaan jadwal...</p>
-        </div>
-
-        <div v-else class="flex flex-col gap-3 px-1">
+        <div class="relative">
           <div 
-            v-for="slot in slots" 
-            :key="slot.id"
-            @click="checkAvailability(selectedDate.fullDateStr, slot) && openModal(slot)"
-            class="relative overflow-hidden rounded-xl p-6 border transition-all duration-300 group flex items-center justify-between"
-            :class="[
-              checkAvailability(selectedDate.fullDateStr, slot)
-                ? 'bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-nandur-green/30 cursor-pointer'
-                : 'bg-gray-50/80 border-gray-100 opacity-50 cursor-not-allowed'
-            ]"
+            class="text-sm md:text-base text-nandur-text/80 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden space-y-3" 
+            :class="isRulesExpanded ? 'max-h-[2000px]' : 'max-h-[4.5rem]'"
           >
-            <div class="flex flex-col">
-              <span class="text-xs font-bold uppercase tracking-wider mb-1" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-hover' : 'text-gray-400'">Sesi {{ slot.time }}</span>
-              <span class="text-xl font-bold" :class="checkAvailability(selectedDate.fullDateStr, slot) ? 'text-nandur-text' : 'text-gray-400 line-through decoration-gray-300 decoration-2'">{{ slot.label }}</span>
-            </div>
-
-            <div>
-              <span v-if="checkAvailability(selectedDate.fullDateStr, slot)" class="inline-flex items-center text-nandur-green text-sm font-bold bg-nandur-green/5 px-4 py-1.5 rounded-full border border-nandur-green/10">
-                Tersedia
-              </span>
-              <span v-else class="inline-flex items-center text-gray-400 text-sm font-bold bg-gray-100 px-4 py-1.5 rounded-full">
-                Penuh
-              </span>
-            </div>
+            <p>
+              Nandur Buku adalah perpustakaan rumah dengan area baca mini dan privat. Demi kenyamanan bersama, kami memohon kerja sama seluruh pengunjung untuk mematuhi beberapa aturan berikut:
+            </p>
+            <ul class="space-y-3 list-disc list-outside pl-5">
+              <li>
+                <strong class="text-nandur-text">Konfirmasi Tim Nandur Buku:</strong> Setelah anda mengirimkan reservasi kedatangan, harap menunggu konfirmasi dari Tim Nandur Buku melalui whatsapp official kami (0895-8089-20117). Tim Nandur Buku akan mengirimkan detail lokasi (pin google map) bersama konfirmasi kedatangan. Perlu diperhatikan, pihak Nandur Buku berhak menyesuaikan atau membatalkan jadwal kunjungan apabila terdapat kondisi tertentu yang tidak memungkinkan untuk menerima tamu.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Satu Sesi Khusus Untuk Kamu Atau Teman-Temanmu:</strong> Setiap reservasi memberikanmu satu slot waktu secara eksklusif. Tidak ada penggabungan dengan pengunjung dari slot lain.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Datang Tepat Waktu:</strong> Harap hadir sesuai dengan jadwal sesi yang telah dikonfirmasi oleh Tim Nandur Buku. Keterlambatan dapat mengurangi waktu baca anda secara keseluruhan.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Pengawasan Dewasa:</strong> Kurasi buku perpustakaan kami dirancang untuk pembaca berumur 18 tahun ke atas, karena misi kami adalah membantu dewasa muda yang kesulitan mengakses buku dengan harga terjangkau. Oleh karena itu, apabila anda berencana membawa anak dibawah 18 tahun, harap memberikan pengawasan kepada bacaan yang tersedia dalam koleksi kami. Silahkan hubungi kami untuk melihat katalog koleksi buku sebelum berkunjung.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Menjaga Ketenangan:</strong> Ruang literasi ini dirancang untuk membaca dengan fokus dan rileks. Selama berada di area baca, kami menghimbau anda untuk tidak membuat keributan, seperti mengobrol dengan suara yang keras atau gerak yang ramai sehingga menyenggol/merusak fasilitas.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Menjaga koleksi buku:</strong> Memperlakukan seluruh koleksi buku dan fasilitas dengan baik. Kerusakan pada koleksi buku atau fasilitas akan ditanggung oleh pengunjung.
+              </li>
+              <li>
+                <strong class="text-nandur-text">Menjaga kebersihan:</strong> Untuk melindungi koleksi buku kami dari kerusakan, pengunjung tidak diperkenankan membawa makanan dan minuman dari luar. Untuk itu, kami juga melarang anda untuk merokok atau vaping. Pelanggaran dapat kami kenakan sanksi berupa denda atau penggantian senilai koleksi buku atau fasilitas.
+              </li>
+            </ul>
+            <p class="font-medium italic pt-2">
+              Terima kasih atas pengertian dan kerja sama anda, kami menantikan kehadiran anda di perpustakaan kecil Nandur Buku.
+            </p>
           </div>
+        </div>
+
+        <button 
+          @click="isRulesExpanded = !isRulesExpanded" 
+          class="mt-3 text-nandur-green font-bold text-sm hover:underline"
+        >
+          {{ isRulesExpanded ? 'Tampilkan lebih sedikit' : 'Selengkapnya...' }}
+        </button>
+      </section>
+      
+      <!-- TENTANG NANDUR BUKU -->
+      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
+        <h2 class="text-lg md:text-xl font-bold mb-3 text-nandur-green">Tentang Nandur Buku</h2>
+        <div class="text-sm md:text-base text-nandur-text/80 leading-relaxed space-y-3">
+          <p>
+            Nandur Buku merupakan perpustakaan kecil berbasis rumah (home library) yang dikelola secara mandiri. Untuk menjaga kenyamanan bersama, kunjungan dilakukan berdasarkan jadwal yang telah dikonfirmasi dan dengan jumlah pengunjung yang terbatas.
+          </p>
+          <p>
+            Kenali kami lebih dalam dengan klik <a href="https://sites.google.com/view/hallo-nandurbuku/kenali-nandur-buku" target="_blank" class="text-nandur-green font-semibold hover:underline">di sini</a>.
+          </p>
         </div>
       </section>
 
@@ -403,7 +429,7 @@ onMounted(() => {
     </div>
 
     <!-- Sticky Footer Social -->
-    <div class="fixed bottom-0 left-0 right-0 z-40 bg-nandur-surface/95 backdrop-blur-md border-t border-nandur-cream shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-nandur-surface/95 backdrop-blur-md border-t border-nandur-cream shadow-[0_-4px_20px_rgba(0,0,0,0.08)] rounded-t-3xl">
       <div class="w-full max-w-3xl mx-auto px-6 py-3 md:py-4 flex justify-around md:justify-center md:gap-24 items-center">
         <!-- Instagram -->
         <a href="https://www.instagram.com/nandurbuku/" target="_blank" class="text-gray-400 hover:text-[#E1306C] transition-colors hover:scale-110 transform duration-200" aria-label="Instagram">

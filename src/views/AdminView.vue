@@ -130,11 +130,23 @@ const handleBlockDay = async () => {
   
   isBlocking.value = true
   try {
-    const slotsToBlock = [
-      'Siang (12:00 - 14:00 WIB)',
-      'Sore (14:00 - 16:00 WIB)',
-      'Petang (16:00 - 18:00 WIB)'
-    ]
+    const [y, m, d] = blockDate.value.split('-')
+    const dayOfWeek = new Date(y, m - 1, d).getDay()
+    
+    let slotsToBlock = []
+    if (dayOfWeek === 5) {
+      slotsToBlock = [
+        'Pertama (13:00 - 15:00 WIB)',
+        'Kedua (15:00 - 17:00 WIB)',
+        'Ketiga (17:00 - 19:00 WIB)'
+      ]
+    } else {
+      slotsToBlock = [
+        'Pertama (12:00 - 14:00 WIB)',
+        'Kedua (14:00 - 16:00 WIB)',
+        'Ketiga (16:00 - 18:00 WIB)'
+      ]
+    }
     
     let successCount = 0
     for (const slot of slotsToBlock) {
@@ -175,6 +187,28 @@ const handleBlockDay = async () => {
   }
 }
 
+const isUnblocking = ref(null)
+const handleUnblockDay = async (dateStr) => {
+  if (!confirm(`Buka kembali tanggal ${formatDateIndo(dateStr)} untuk publik?`)) return
+  
+  isUnblocking.value = dateStr
+  try {
+    const payload = {
+      action: 'unblock',
+      tanggal: dateStr,
+      pin: pin.value
+    }
+    
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) })
+    alert(`Tanggal ${formatDateIndo(dateStr)} sukses dibuka kembali!`)
+    await handleLogin() // Refresh data
+  } catch (err) {
+    alert("Gagal membuka kembali hari libur.")
+  } finally {
+    isUnblocking.value = null
+  }
+}
+
 // Filter Bulan
 const selectedMonth = ref('Semua')
 const isDropdownOpen = ref(false)
@@ -211,6 +245,16 @@ const realBookings = computed(() => {
   }
   
   return filtered
+})
+
+const blockedDays = computed(() => {
+  const dates = new Set()
+  bookings.value.forEach(b => {
+    if (b.nama === 'TUTUP (LIBUR)') {
+      dates.add(b.tanggalAsli)
+    }
+  })
+  return Array.from(dates).sort((a, b) => b.localeCompare(a)) // descending
 })
 </script>
 
@@ -429,7 +473,7 @@ const realBookings = computed(() => {
         <div v-else-if="activeTab === 'libur'" class="w-full max-w-2xl mx-auto space-y-6">
           <div class="mb-8">
             <h2 class="text-3xl font-black text-nandur-green mb-2">Kelola Hari Libur</h2>
-            <p class="text-gray-500">Tutup semua sesi (Siang, Sore, Petang) secara paksa pada tanggal tertentu.</p>
+            <p class="text-gray-500">Tutup semua sesi (Pertama, Kedua, Ketiga) secara paksa pada tanggal tertentu.</p>
           </div>
 
           <div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-nandur-cream">
@@ -447,12 +491,29 @@ const realBookings = computed(() => {
 
             <button 
               @click="handleBlockDay"
-              :disabled="isBlocking || !blockDate"
-              class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-lg"
+              :disabled="isBlocking"
+              class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2"
             >
-              <span v-if="isBlocking" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Kunci Hari Ini
+              <div v-if="isBlocking" class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+              <span v-else>BLOKIR HARI INI</span>
             </button>
+          </div>
+
+          <div v-if="blockedDays.length > 0" class="mt-8 bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-nandur-cream">
+            <h3 class="text-xl font-bold text-nandur-text mb-4">Daftar Hari Libur</h3>
+            <div class="space-y-3">
+              <div v-for="date in blockedDays" :key="date" class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 gap-3">
+                <span class="font-bold text-gray-700">{{ formatDateIndo(date) }}</span>
+                <button 
+                  @click="handleUnblockDay(date)"
+                  :disabled="isUnblocking === date"
+                  class="bg-white border border-gray-200 hover:border-nandur-green hover:text-nandur-green text-sm font-bold py-2 px-4 rounded-lg transition-all"
+                >
+                  <span v-if="isUnblocking === date">Memproses...</span>
+                  <span v-else>Buka Kembali</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
