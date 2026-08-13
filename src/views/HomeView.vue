@@ -282,7 +282,7 @@ onMounted(() => {
       <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-4 md:p-5 flex items-center justify-between border border-gray-50 relative overflow-hidden">
         <div class="z-10">
           <h3 class="font-bold text-nandur-text text-sm">Lokasi Kami</h3>
-          <p class="text-sm text-nandur-text/70 mt-0.5">Kapuk Muara, Jakarta Barat</p>
+          <p class="text-sm text-nandur-text/70 mt-0.5">Meruya Selatan, Jakarta Barat</p>
         </div>
         <div class="z-10 flex flex-col items-center justify-center text-nandur-green">
           <MapPinIcon class="w-6 h-6 mb-1" />
