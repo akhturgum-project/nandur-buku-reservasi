@@ -417,8 +417,9 @@ onMounted(() => {
           </svg>
         </div>
         <h3 class="text-2xl font-black text-nandur-text mb-2">Reservasi Berhasil!</h3>
-        <p class="text-nandur-text/70 mb-8 text-sm leading-relaxed">
-          Terima kasih, tempat Anda sudah kami siapkan. Sampai jumpa di Nandur Buku!
+        <p class="text-nandur-text/70 mb-8 text-sm leading-relaxed whitespace-pre-line">
+          Terima kasih, kami akan segera mengkonfirmasi kedatangan anda melalui Whatsapp official (0895-8089-20117).
+          Sampai jumpa di Nandur Buku!
         </p>
         <button 
           @click="isSuccessModalOpen = false"

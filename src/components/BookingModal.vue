@@ -80,10 +80,11 @@ const handleSubmit = async () => {
     return
   }
   
-  if (!isOtpSent.value || !form.value.otp) {
-    alert("Anda harus memverifikasi email dengan kode OTP terlebih dahulu.")
-    return
-  }
+  // SEMENTARA DI-HOLD: Validasi OTP
+  // if (!isOtpSent.value || !form.value.otp) {
+  //   alert("Anda harus memverifikasi email dengan kode OTP terlebih dahulu.")
+  //   return
+  // }
 
   isLoading.value = true
   
@@ -163,20 +164,32 @@ const handleSubmit = async () => {
             <input v-model="form.nama" type="text" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text" placeholder="Masukkan nama lengkap">
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-nandur-text mb-1">Usia</label>
-              <input v-model="form.usia" type="number" required min="1" class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text" placeholder="Contoh: 24">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-nandur-text mb-1">Jumlah Tamu</label>
-              <select v-model="form.tamu" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
-                <option value="1">1 Orang</option>
-                <option value="2">2 Orang</option>
-                <option value="3">3 Orang</option>
-                <option value="4">4 Orang (Maks)</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-nandur-text mb-1">Usia</label>
+            <input v-model="form.usia" type="number" required min="1" class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text" placeholder="Contoh: 24">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-nandur-text mb-1">Pilih Domisili</label>
+            <select v-model="form.domisili" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
+              <option value="" disabled>Pilih domisili</option>
+              <option value="Jakarta Pusat">Jakarta Pusat</option>
+              <option value="Jakarta Selatan">Jakarta Selatan</option>
+              <option value="Jakarta Barat">Jakarta Barat</option>
+              <option value="Jakarta Timur">Jakarta Timur</option>
+              <option value="Jakarta Utara">Jakarta Utara</option>
+              <option value="Luar Jakarta">Luar Jakarta</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-nandur-text mb-1">Jumlah Tamu</label>
+            <select v-model="form.tamu" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
+              <option value="1">1 Orang</option>
+              <option value="2">2 Orang</option>
+              <option value="3">3 Orang</option>
+              <option value="4">4 Orang (Maks)</option>
+            </select>
           </div>
 
           <div>
@@ -196,8 +209,10 @@ const handleSubmit = async () => {
           <div>
             <label class="block text-sm font-medium text-nandur-text mb-1">Email</label>
             <div class="flex flex-col sm:flex-row gap-2">
-              <input v-model="form.email" type="email" required :disabled="isOtpSent" class="flex-1 px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text disabled:bg-gray-100 disabled:text-gray-500 transition-colors" placeholder="Masukkan email aktif">
+              <input v-model="form.email" type="email" required class="flex-1 px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text transition-colors" placeholder="Masukkan email aktif">
+              <!-- FITUR OTP SEMENTARA DI-HOLD (TETAP ADA KODENYA TAPI DISEMBUNYIKAN) -->
               <button 
+                v-if="false"
                 type="button" 
                 @click="handleSendOtp"
                 :disabled="isSendingOtp || isOtpSent || !form.email"
@@ -210,12 +225,11 @@ const handleSubmit = async () => {
           </div>
 
           <Transition name="fade-slide">
-            <div v-if="isOtpSent" class="bg-nandur-green/5 p-4 rounded-xl border border-nandur-green/20">
+            <div v-if="false" class="bg-nandur-green/5 p-4 rounded-xl border border-nandur-green/20">
               <label class="block text-sm font-medium text-nandur-green mb-2">Kode OTP (Cek Inbox/Spam Email)</label>
               <input 
                 v-model="form.otp" 
                 type="text" 
-                required 
                 maxlength="4" 
                 class="w-full px-4 py-3 text-center tracking-[1em] font-black text-xl rounded-lg border border-nandur-green/50 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green text-nandur-text" 
                 placeholder="••••"
@@ -236,19 +250,6 @@ const handleSubmit = async () => {
               <option value="TikTok">TikTok</option>
               <option value="Teman/Keluarga">Teman / Keluarga</option>
               <option value="Lainnya">Lainnya</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-nandur-text mb-1">Domisili</label>
-            <select v-model="form.domisili" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
-              <option value="" disabled>Pilih domisili</option>
-              <option value="Jakarta Pusat">Jakarta Pusat</option>
-              <option value="Jakarta Selatan">Jakarta Selatan</option>
-              <option value="Jakarta Barat">Jakarta Barat</option>
-              <option value="Jakarta Timur">Jakarta Timur</option>
-              <option value="Jakarta Utara">Jakarta Utara</option>
-              <option value="Luar Jakarta">Luar Jakarta</option>
             </select>
           </div>
         </form>
