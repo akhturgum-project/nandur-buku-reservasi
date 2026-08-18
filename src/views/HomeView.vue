@@ -299,39 +299,39 @@ onMounted(() => {
       <section class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 w-full">
         <div class="flex items-center gap-3">
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
+            <BookOpenIcon class="w-5 h-5 text-nandur-green" />
+          </div>
+          <span class="text-sm font-medium leading-tight">Ruang baca privat</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
             <UsersIcon class="w-5 h-5 text-nandur-green" />
           </div>
-          <span class="text-sm font-medium leading-tight">Maks 4 org</span>
+          <span class="text-sm font-medium leading-tight">Max 4 orang</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
+            <ClockIcon class="w-5 h-5 text-nandur-green" />
+          </div>
+          <span class="text-sm font-medium leading-tight">Durasi 2 Jam</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
             <CalendarDaysIcon class="w-5 h-5 text-nandur-green" />
           </div>
-          <span class="text-sm font-medium leading-tight">Senin - Rabu libur</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
-            <GlobeAltIcon class="w-5 h-5 text-nandur-green" />
-          </div>
-          <span class="text-sm font-medium leading-tight">Terbuka umum</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
-            <BookOpenIcon class="w-5 h-5 text-nandur-green" />
-          </div>
-          <span class="text-sm font-medium leading-tight">Koleksi melimpah</span>
+          <span class="text-sm font-medium leading-tight">Buka Kamis - Minggu</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
             <TagIcon class="w-5 h-5 text-nandur-green" />
           </div>
-          <span class="text-sm font-medium leading-tight">Reservasi gratis</span>
+          <span class="text-sm font-medium leading-tight">Reservasi Gratis</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
-            <ChatBubbleLeftRightIcon class="w-5 h-5 text-nandur-green" />
+            <GlobeAltIcon class="w-5 h-5 text-nandur-green" />
           </div>
-          <span class="text-sm font-medium leading-tight">Open diskusi</span>
+          <span class="text-sm font-medium leading-tight">Terbuka Umum</span>
         </div>
       </section>
 
