@@ -173,12 +173,16 @@ const handleSubmit = async () => {
             <label class="block text-sm font-medium text-nandur-text mb-1">Pilih Domisili</label>
             <select v-model="form.domisili" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
               <option value="" disabled>Pilih domisili</option>
-              <option value="Jakarta Pusat">Jakarta Pusat</option>
-              <option value="Jakarta Selatan">Jakarta Selatan</option>
               <option value="Jakarta Barat">Jakarta Barat</option>
+              <option value="Jakarta Selatan">Jakarta Selatan</option>
+              <option value="Jakarta Pusat">Jakarta Pusat</option>
               <option value="Jakarta Timur">Jakarta Timur</option>
               <option value="Jakarta Utara">Jakarta Utara</option>
-              <option value="Luar Jakarta">Luar Jakarta</option>
+              <option value="Tangerang">Tangerang</option>
+              <option value="Bogor">Bogor</option>
+              <option value="Depok">Depok</option>
+              <option value="Bekasi">Bekasi</option>
+              <option value="Selain Jabodetabek">Selain Jabodetabek</option>
             </select>
           </div>
 
@@ -246,9 +250,10 @@ const handleSubmit = async () => {
             <label class="block text-sm font-medium text-nandur-text mb-1">Tahu Nandur Buku Dari Mana?</label>
             <select v-model="form.sumber" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
               <option value="" disabled>Pilih salah satu</option>
+              <option value="Threads">Threads</option>
               <option value="Instagram">Instagram</option>
               <option value="TikTok">TikTok</option>
-              <option value="Teman/Keluarga">Teman / Keluarga</option>
+              <option value="Teman/Keluarga">Teman/Keluarga</option>
               <option value="Lainnya">Lainnya</option>
             </select>
           </div>
