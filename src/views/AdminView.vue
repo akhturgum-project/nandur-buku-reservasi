@@ -143,8 +143,8 @@ const handleBlockDay = async () => {
     } else {
       slotsToBlock = [
         'Pertama (12:00 - 14:00 WIB)',
-        'Kedua (14:00 - 16:00 WIB)',
-        'Ketiga (16:00 - 18:00 WIB)'
+        'Kedua (14:30 - 16:30 WIB)',
+        'Ketiga (17:00 - 19:00 WIB)'
       ]
     }
     
@@ -172,8 +172,14 @@ const handleBlockDay = async () => {
         pin: pin.value
       }
       
-      await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) })
-      successCount++
+      const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) })
+      const json = await res.json()
+      
+      if (json.success) {
+        successCount++
+      } else {
+        console.error("Gagal blokir slot", slot, json.message)
+      }
     }
     
     if (successCount > 0) {
