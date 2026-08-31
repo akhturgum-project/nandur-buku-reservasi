@@ -266,6 +266,7 @@ const handleSubmit = async () => {
               <option value="TikTok">TikTok</option>
               <option value="X">X</option>
               <option value="Teman/Keluarga">Teman/Keluarga</option>
+              <option value="Sudah jadi member">Sudah jadi member</option>
               <option value="Lainnya">Lainnya</option>
             </select>
           </div>
