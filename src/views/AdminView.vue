@@ -167,6 +167,7 @@ const handleBlockDay = async () => {
         wa: '0000000000',
         tamu: '0',
         sumber: 'Admin',
+        tujuan: 'Admin',
         domisili: 'Admin',
         pin: pin.value
       }
@@ -441,6 +442,10 @@ const blockedDays = computed(() => {
                 <div>
                   <p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Sumber Info</p>
                   <p class="font-semibold text-nandur-text truncate" :title="b.sumber">{{ b.sumber || '-' }}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Tujuan</p>
+                  <p class="font-semibold text-nandur-text truncate" :title="b.tujuan">{{ b.tujuan || '-' }}</p>
                 </div>
                 <div class="col-span-2 mt-1">
                   <p class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Email</p>

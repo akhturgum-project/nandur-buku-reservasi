@@ -17,6 +17,7 @@ const form = ref({
   email: '',
   wa: '',
   tamu: '1',
+  tujuan: '',
   sumber: '',
   domisili: '',
   otp: ''
@@ -118,6 +119,7 @@ const handleSubmit = async () => {
         email: '',
         wa: '',
         tamu: '1',
+        tujuan: '',
         sumber: '',
         domisili: '',
         otp: ''
@@ -191,8 +193,7 @@ const handleSubmit = async () => {
             <select v-model="form.tamu" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
               <option value="1">1 Orang</option>
               <option value="2">2 Orang</option>
-              <option value="3">3 Orang</option>
-              <option value="4">4 Orang (Maks)</option>
+              <option value="3">3 Orang (Maks)</option>
             </select>
           </div>
 
@@ -247,12 +248,23 @@ const handleSubmit = async () => {
           </Transition>
 
           <div>
+            <label class="block text-sm font-medium text-nandur-text mb-1">Tujuan Berkunjung</label>
+            <select v-model="form.tujuan" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
+              <option value="" disabled>Pilih salah satu</option>
+              <option value="Ingin mengenal Nandur Buku">Ingin mengenal Nandur Buku</option>
+              <option value="Meminjam buku">Meminjam buku</option>
+              <option value="Mengembalikan buku">Mengembalikan buku</option>
+            </select>
+          </div>
+
+          <div>
             <label class="block text-sm font-medium text-nandur-text mb-1">Tahu Nandur Buku Dari Mana?</label>
             <select v-model="form.sumber" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
               <option value="" disabled>Pilih salah satu</option>
               <option value="Threads">Threads</option>
               <option value="Instagram">Instagram</option>
               <option value="TikTok">TikTok</option>
+              <option value="X">X</option>
               <option value="Teman/Keluarga">Teman/Keluarga</option>
               <option value="Lainnya">Lainnya</option>
             </select>

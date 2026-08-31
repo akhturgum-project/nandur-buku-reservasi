@@ -307,7 +307,7 @@ onMounted(() => {
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
             <UsersIcon class="w-5 h-5 text-nandur-green" />
           </div>
-          <span class="text-sm font-medium leading-tight">Max 4 orang</span>
+          <span class="text-sm font-medium leading-tight">Max 3 orang</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-nandur-green/10 p-2 rounded-lg flex-shrink-0">
