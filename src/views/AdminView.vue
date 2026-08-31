@@ -133,20 +133,11 @@ const handleBlockDay = async () => {
     const [y, m, d] = blockDate.value.split('-')
     const dayOfWeek = new Date(y, m - 1, d).getDay()
     
-    let slotsToBlock = []
-    if (dayOfWeek === 5) {
-      slotsToBlock = [
-        'Pertama (13:00 - 15:00 WIB)',
-        'Kedua (15:00 - 17:00 WIB)',
-        'Ketiga (17:00 - 19:00 WIB)'
-      ]
-    } else {
-      slotsToBlock = [
-        'Pertama (12:00 - 14:00 WIB)',
-        'Kedua (14:30 - 16:30 WIB)',
-        'Ketiga (17:00 - 19:00 WIB)'
-      ]
-    }
+    let slotsToBlock = [
+      'Pertama (12:00 - 14:00 WIB)',
+      'Kedua (14:30 - 16:30 WIB)',
+      'Ketiga (17:00 - 19:00 WIB)'
+    ]
     
     let successCount = 0
     for (const slot of slotsToBlock) {

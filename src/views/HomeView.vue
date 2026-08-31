@@ -62,13 +62,6 @@ const currentMonthYear = computed(() => {
 
 // --- DATA SLOTS ---
 const getSlotsForDay = (dayOfWeek) => {
-  if (dayOfWeek === 5) { // Jumat
-    return [
-      { id: 1, label: '13:00 - 15:00 WIB', time: 'Pertama' },
-      { id: 2, label: '15:00 - 17:00 WIB', time: 'Kedua' },
-      { id: 3, label: '17:00 - 19:00 WIB', time: 'Ketiga' }
-    ]
-  }
   return [
     { id: 1, label: '12:00 - 14:00 WIB', time: 'Pertama' },
     { id: 2, label: '14:30 - 16:30 WIB', time: 'Kedua' },
@@ -105,11 +98,11 @@ const fetchAvailability = async () => {
         
         // Normalisasi format lama (1, 2, 3) atau (Siang, Sore, Petang) ke format baru
         if (slotName == '1' || slotName.includes('Siang') || slotName.includes('Pertama')) {
-           slotName = dayOfWeek === 5 ? 'Pertama (13:00 - 15:00 WIB)' : 'Pertama (12:00 - 14:00 WIB)'
+           slotName = 'Pertama (12:00 - 14:00 WIB)'
         } else if (slotName == '2' || slotName.includes('Sore') || slotName.includes('Kedua')) {
-           slotName = dayOfWeek === 5 ? 'Kedua (15:00 - 17:00 WIB)' : 'Kedua (14:30 - 16:30 WIB)'
+           slotName = 'Kedua (14:30 - 16:30 WIB)'
         } else if (slotName == '3' || slotName.includes('Petang') || slotName.includes('Ketiga')) {
-           slotName = dayOfWeek === 5 ? 'Ketiga (17:00 - 19:00 WIB)' : 'Ketiga (17:00 - 19:00 WIB)'
+           slotName = 'Ketiga (17:00 - 19:00 WIB)'
         }
 
         newBooked[`${dateStr}-${slotName}`] = true
