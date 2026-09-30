@@ -328,6 +328,28 @@ onMounted(() => {
         </div>
       </section>
 
+      <!-- BIAYA KONTRIBUSI KUNJUNGAN -->
+      <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
+        <h2 class="text-lg md:text-xl font-bold mb-4 text-nandur-green">Biaya Kontribusi Kunjungan</h2>
+        <div class="text-sm md:text-base text-nandur-text/80 leading-relaxed space-y-3">
+          <p>
+            Dengan membayar kontribusi kunjungan, anda telah membantu kami untuk ikut merawat ruang baca Nandur Buku.
+          </p>
+          <p>Biaya kontribusi:</p>
+          <ul class="space-y-1 list-disc list-outside pl-5">
+            <li>1 orang = Rp 15,000</li>
+            <li>2 orang = Rp 25,000</li>
+            <li>3 orang = Rp 35,000</li>
+          </ul>
+          <p>
+            Informasi detil pembayaran akan dikirimkan melalui Whatsapp Nandur Buku setelah anda mengirimkan/submit form reservasi pada halaman ini.
+          </p>
+          <p>
+            Punya pertanyaan? Silahkan hubungi kami melalui Whatsapp di 0895-8089-20117.
+          </p>
+        </div>
+      </section>
+
       <!-- ATURAN BERKUNJUNG -->
       <section class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] p-5 md:p-6 border border-gray-50 text-nandur-text relative">
         <h2 class="text-lg md:text-xl font-bold mb-4 text-nandur-green">Aturan Berkunjung</h2>
@@ -351,7 +373,7 @@ onMounted(() => {
                 <strong class="text-nandur-text">Datang Tepat Waktu:</strong> Harap hadir sesuai dengan jadwal sesi yang telah dikonfirmasi oleh Tim Nandur Buku. Keterlambatan dapat mengurangi waktu baca anda secara keseluruhan.
               </li>
               <li>
-                <strong class="text-nandur-text">Pengawasan Dewasa:</strong> Kurasi buku perpustakaan kami dirancang untuk pembaca berumur 18 tahun ke atas, karena misi kami adalah membantu dewasa muda yang kesulitan mengakses buku dengan harga terjangkau. Oleh karena itu, apabila anda berencana membawa anak dibawah 18 tahun, harap memberikan pengawasan kepada bacaan yang tersedia dalam koleksi kami. Silahkan hubungi kami untuk melihat katalog koleksi buku sebelum berkunjung.
+                <strong class="text-nandur-text">Pengawasan Dewasa :</strong> Kurasi buku perpustakaan kami dirancang untuk pembaca berumur 18 tahun ke atas, karena misi kami adalah membantu dewasa muda yang kesulitan mengakses buku dengan harga terjangkau. Oleh karena itu, apabila anda berencana membawa anak dibawah 18 tahun, harap memberikan pengawasan kepada bacaan yang tersedia dalam koleksi kami. Silahkan hubungi kami untuk melihat katalog koleksi buku sebelum berkunjung.
               </li>
               <li>
                 <strong class="text-nandur-text">Menjaga Ketenangan:</strong> Ruang literasi ini dirancang untuk membaca dengan fokus dan rileks. Selama berada di area baca, kami menghimbau anda untuk tidak membuat keributan, seperti mengobrol dengan suara yang keras atau gerak yang ramai sehingga menyenggol/merusak fasilitas.
@@ -360,7 +382,7 @@ onMounted(() => {
                 <strong class="text-nandur-text">Menjaga koleksi buku:</strong> Memperlakukan seluruh koleksi buku dan fasilitas dengan baik. Kerusakan pada koleksi buku atau fasilitas akan ditanggung oleh pengunjung.
               </li>
               <li>
-                <strong class="text-nandur-text">Menjaga kebersihan:</strong> Untuk melindungi koleksi buku kami dari kerusakan, pengunjung tidak diperkenankan membawa makanan dan minuman dari luar. Untuk itu, kami juga melarang anda untuk merokok atau vaping. Pelanggaran dapat kami kenakan sanksi berupa denda atau penggantian senilai koleksi buku atau fasilitas.
+                <strong class="text-nandur-text">Menjaga kebersihan :</strong> Untuk melindungi koleksi buku kami dari kerusakan, pengunjung tidak diperkenankan membawa makanan dan minuman dari luar. Untuk itu, kami juga melarang anda untuk merokok atau vaping. Pelanggaran dapat kami kenakan sanksi berupa denda atau penggantian senilai koleksi buku atau fasilitas.
               </li>
             </ul>
             <p class="font-medium italic pt-2">
