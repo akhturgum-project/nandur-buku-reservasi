@@ -433,7 +433,7 @@ onMounted(() => {
         </div>
         <h3 class="text-2xl font-black text-nandur-text mb-2">Reservasi Berhasil!</h3>
         <p class="text-nandur-text/70 mb-8 text-sm leading-relaxed whitespace-pre-line">
-          Terima kasih, kami akan segera mengkonfirmasi kedatangan anda melalui Whatsapp official (0895-8089-20117).
+          Terima kasih, kami akan segara mengkonfirmasi kedatangan/pembayaran kontribusi kunjungan anda melalui Whatsapp (0895-8089-20117).
           Sampai jumpa di Nandur Buku!
         </p>
         <button 

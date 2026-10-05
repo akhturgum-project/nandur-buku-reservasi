@@ -252,8 +252,8 @@ const handleSubmit = async () => {
             <select v-model="form.tujuan" required class="w-full px-4 py-2 rounded-lg border border-nandur-green/30 bg-white focus:outline-none focus:ring-2 focus:ring-nandur-green/50 text-nandur-text">
               <option value="" disabled>Pilih salah satu</option>
               <option value="Ingin mengenal Nandur Buku">Ingin mengenal Nandur Buku</option>
-              <option value="Meminjam buku">Meminjam buku</option>
-              <option value="Mengembalikan buku">Mengembalikan buku</option>
+              <option value="Membaca buku">Membaca buku</option>
+              <option value="Meminjam/Mengembalikan buku">Meminjam/Mengembalikan buku</option>
             </select>
           </div>
 
